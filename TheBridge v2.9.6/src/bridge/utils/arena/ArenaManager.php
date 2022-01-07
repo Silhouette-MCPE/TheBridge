@@ -25,9 +25,8 @@ use pocketmine\entity\Effect;
 use pocketmine\item\enchantment\Enchantment;
 
 use pocketmine\utils\Color;
-use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as T;
-
+use pocketmine\utils\Config;
 use Scoreboards\Scoreboards;
 use pocketmine\item\enchantment\EnchantmentInstance;
 
@@ -889,7 +888,7 @@ class ArenaManager{
 		
 		unset($this->players[$name]);
 		if($msg){
-			$player->sendMessage("");
+			$player->sendMessage("§gYou left the arena.");
 		}
 	}
 	
