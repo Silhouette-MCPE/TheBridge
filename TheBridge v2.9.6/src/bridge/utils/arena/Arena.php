@@ -77,23 +77,23 @@ class Arena implements Listener{
 				$form = new Form(function (Player $player, int $data = null) {
 					switch($data) {
 						case 0:
+							$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Solos");
 						break;
 						case 1:
-						$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Solos");
+							$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Duos");
 						break;
 						case 2:
-						$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Duos");
+							$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Squads");
 						break;
 						case 3:
-						$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Squads");
 						break;
 					}
 				});
 				$form->setTitle("§l§eSelect Mode");
-				$form->addButton("§cExit");
 				$form->addButton("§bMode: §eSolos");
 				$form->addButton("§bMode: §eDuos");
 				$form->addButton("§bMode: §eSquads");
+				$form->addButton("§cExit");
 				$player->sendForm($form);
 			}
 		}
