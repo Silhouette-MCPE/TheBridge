@@ -27,6 +27,7 @@ use pocketmine\item\enchantment\Enchantment;
 use pocketmine\utils\Color;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as T;
+
 use Scoreboards\Scoreboards;
 use pocketmine\item\enchantment\EnchantmentInstance;
 
@@ -868,12 +869,12 @@ class ArenaManager{
 		  $inv->clearAll();
 		$this->getTeamData()->removePlayerTeam($name);
 		  
-		    $config = new Config("resources/kills.yml", Config::YAML);
+		    $config = new Config($this->plugin->getDataFolder() . "kills.yml", Config::YAML);
             $config->getAll();
             $config->set($player->getName(), $config->remove($player->getName(), "               "));
             $config->set($player->getName(), $config->remove($player->getName(), "0"));
             $config->save();
-		    $gconfig = new Config("resources/goals.yml", Config::YAML);
+		    $gconfig = new Config($this->plugin->getDataFolder() . "goals.yml", Config::YAML);
             $gconfig->getAll();
             $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "               "));
             $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "0"));
