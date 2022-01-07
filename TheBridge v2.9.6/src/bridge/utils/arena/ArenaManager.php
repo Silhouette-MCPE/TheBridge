@@ -334,7 +334,7 @@ class ArenaManager{
 				foreach($level->getPlayers() as $p){
 				    $data = $this->getData();
 				    $name = $data["world"];
-				    $map = $this->getSever()->getLevelByName($name);
+				    $map = $this->getServer()->getLevelByName($name);
 
 				    $bar = (new BossBar())->setTitle("§l§e§oTHEBRIDGE")->setSubTitle("§l§amap§7: $map")->setPercentage(1)->addPlayer($p);
 
