@@ -186,6 +186,7 @@ class Arena implements Listener{
 				$e->setCancelled();
 				$arena->quit($p);
 				$this->getPlugin()->deleteInArena($p);
+				$p->sendMessage("§gYou left the arena.");
 		}
 	}
 	
