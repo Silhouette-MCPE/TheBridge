@@ -186,7 +186,6 @@ class Arena implements Listener{
 				$e->setCancelled();
 				$arena->quit($p);
 				$this->getPlugin()->deleteInArena($p);
-				$p->sendMessage("§gYou left the arena.");
 		}
 	}
 	
@@ -276,7 +275,7 @@ class Arena implements Listener{
 		$p = $e->getPlayer();
 		$arena = $this->getPlugin()->getPlayerArena($p);
 		if(!is_null($arena)){
-			$arena->broadcast( " §c". $p->getNameTag() . " Has left the game", 3);
+			$arena->broadcast( " §c". $p->getNameTag() . " has left the game", 3);
 			
 			$arena->quit($p, false);
 		}
