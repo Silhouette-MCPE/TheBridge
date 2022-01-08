@@ -339,7 +339,7 @@ class ArenaManager{
 				    $bar = new BossBar();
 				    $bar->setTitle("§l§e§oTHEBRIDGE");
                                     $bar->setSubTitle("§l§amap§7:".$map);
-				    $bar->setPercentage(1);
+				    $bar->setPercentage(50.0);
 				    $bar->addPlayer($p);
 
 				    $goal = new Config("plugin_data/TheBridge/goals.yml", Config::YAML);
