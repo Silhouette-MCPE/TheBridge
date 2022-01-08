@@ -342,9 +342,9 @@ class ArenaManager{
 				    $bar->setPercentage(0.5);
 				    $bar->addPlayer($p);
 
-				    $goal = new Config("plugin_data/TheBridge/goals.yml", Config::YAML);
+				    $goal = new Config($this->getPlugin()->getDataFolder() . "goals.yml", Config::YAML);
                     $goal->getAll();
-                    $kills = new Config("plugin_data/Thebridge/kills.yml", Config::YAML);
+                    $kills = new Config($this->getPlugin()->getDataFolder() . "kills.yml", Config::YAML);
                     $kills->getAll();
 
 				    $api = Scoreboards::getInstance();
@@ -376,12 +376,12 @@ class ArenaManager{
 			if($time <= 0){
 			    $player = $p();
 				$this->stat = self::STAT_GANHO;
-		    $config = new Config("plugin_data/Thebridge/kills.yml", Config::YAML);
+		    $config = new Config($this->getPlugin()->getDataFolder() . "kills.yml", Config::YAML);
             $config->getAll();
             $config->set($player->getName(), $config->remove($player->getName(), "               "));
             $config->set($player->getName(), $config->remove($player->getName(), "0"));
             $config->save();
-		    $gconfig = new Config("plugin_data/Thebridge/goals.yml", Config::YAML);
+		    $gconfig = new Config($this->getPlugin()->getDataFolder() . "goals.yml", Config::YAML);
             $gconfig->getAll();
             $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "               "));
             $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "0"));
@@ -410,12 +410,12 @@ class ArenaManager{
 				$players = $this->getPlayers();
 				foreach($players as $name => $pl){
 				    $players = $pl();
-		    $config = new Config("plugin_data/Thebridge/kills.yml", Config::YAML);
+		    $config = new Config($this->getPlugin()->getDataFolder() . "kills.yml", Config::YAML);
             $config->getAll();
             $config->set($player->getName(), $config->remove($player->getName(), "               "));
             $config->set($player->getName(), $config->remove($player->getName(), "0"));
             $config->save();
-		    $gconfig = new Config("plugin_data/Thebridge/goals.yml", Config::YAML);
+		    $gconfig = new Config($this->getPlugin()->getDataFolder() . "goals.yml", Config::YAML);
             $gconfig->getAll();
             $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "               "));
             $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "0"));
