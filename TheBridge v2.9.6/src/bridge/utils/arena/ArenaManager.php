@@ -30,7 +30,7 @@ use pocketmine\utils\Config;
 use Scoreboards\Scoreboards;
 use pocketmine\item\enchantment\EnchantmentInstance;
 
-
+use xenialdan\apibossbar\BossBar;
 
 use bridge\utils\Team;
 use bridge\utils\Utils;
@@ -336,7 +336,11 @@ class ArenaManager{
 				    $name = $data["world"];
 				    $map = $this->getServer()->getLevelByName($name);
 
-				    $bar = (new BossBar())->setTitle("§l§e§oTHEBRIDGE")->setSubTitle("§l§amap§7: $map")->setPercentage(1)->addPlayer($p);
+				    $bar = new BossBar();
+				    $bar->setTitle("§l§e§oTHEBRIDGE");
+				    $bar->setSubTitle("§l§amap§7: $map");
+				    $bar->setPercentage(1);
+				    $bar->addPlayer($p);
 
 				    $goal = new Config("plugin_data/TheBridge/goals.yml", Config::YAML);
                     $goal->getAll();
