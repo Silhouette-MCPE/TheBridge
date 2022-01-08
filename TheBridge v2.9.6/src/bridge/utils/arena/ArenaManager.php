@@ -32,6 +32,8 @@ use pocketmine\item\enchantment\EnchantmentInstance;
 
 use xenialdan\apibossbar\BossBar;
 
+use Scoreboards\Scoreboards;
+
 use bridge\utils\Team;
 use bridge\utils\Utils;
 use bridge\Main;
