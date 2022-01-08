@@ -338,7 +338,6 @@ class ArenaManager{
 
 				    $bar = new BossBar();
 				    $bar->setTitle("§l§e§oTHEBRIDGE");
-                                    $bar->setSubTitle("§l§amap§7:".$map);
 				    $bar->setPercentage(0.5);
 				    $bar->addPlayer($p);
 
