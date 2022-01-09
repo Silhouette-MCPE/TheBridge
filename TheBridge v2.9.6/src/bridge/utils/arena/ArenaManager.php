@@ -26,11 +26,10 @@ use pocketmine\item\enchantment\Enchantment;
 
 use pocketmine\utils\Color;
 use pocketmine\utils\TextFormat as T;
-use pocketmine\utils\Config;
 use Scoreboards\Scoreboards;
 use pocketmine\item\enchantment\EnchantmentInstance;
 
-use xenialdan\apibossbar\BossBar;
+
 
 use bridge\utils\Team;
 use bridge\utils\Utils;
@@ -291,8 +290,26 @@ class ArenaManager{
 				if(count($players) <= 0){
 					return true;
 				}
-				$this->broadcast("§l§eTHEBRIDGE\n§r§bWaiting for players to start§7( " . ($nec - count($players)). " ...");
+				$level = $this->getLevel();
+if(!is_null($level)){
+foreach($level->getPlayers() as $p){
+$day = date("d");
+$month = date("m");
+$year = date("Y");
+$map = $p->getLevel()->getFolderName();
+$api = Scoreboards::getInstance(); 
+$api->new($p, "TheBridge",  "§e§lTheBridge");
+$api->setLine($p, 1,  "§7$day/$month/$year");
+$api->setLine($p, 2,  "          ");
+$api->setLine($p, 3,  "§rPlayers: §a".count($this->players));
+$api->setLine($p, 4,  "§aWaiting...");
+$api->setLine($p, 5,  "     ");
+$api->setLine($p, 6,  "§rMode: ".T::GREEN.$this->data["mode"]);
+$api->setLine($p, 7,  "§rMap: §a$map");
+$api->getObjectiveName($p);
 			}
+		    }
+		    }
 			break;
 			case self::STAT_STATING:
 			$players = $this->getPlayers();
@@ -303,16 +320,37 @@ class ArenaManager{
 				$this->time--;
 				$time = $this->time - 6;
 				if($time <= 0){
-	
+					$this->setTeams();
 					$this->stat = self::STAT_START;
 					$this->replaceSpawn();
 					$this->teleportPlayers($this->getPlayers());
 				} else {
 					$temp = $this->getTemp($time);
-					$message = "§a§lGAMES STARTS:\n§r§6 in§b§f $temp";
-					$this->broadcast($message);
+					$level = $this->getLevel();
+
+if(!is_null($level)){
+foreach($level->getPlayers() as $p){
+$day = date("d");
+$month = date("m");
+$year = date("Y");
+$map = $p->getLevel()->getFolderName();
+$api = Scoreboards::getInstance();
+$p->addTitle("§fstart in", "§a$temp §aSeconds");
+$api->new($p, "TheBridge",  "§e§lTheBridge");
+$api->setLine($p, 1,  "§7$day/$month/$year");
+$api->setLine($p, 2,  "          ");
+$api->setLine($p, 3,  "§fPlayers: §a".count($this->players));
+$api->setLine($p, 4,  "§fMap: §a$map");
+$api->setLine($p, 5, "   ");
+$api->setLine($p, 6,  "§fStarting In §a$temp");
+$api->setLine($p, 7,  "     ");
+$api->setLine($p, 8,  "§fMode: ".T::GREEN.$this->data["mode"]);
+$api->getObjectiveName($p);
+
 				}
 			}
+		    }
+		    }
 			break;
 			case self::STAT_START:
 			$this->time--;
@@ -323,71 +361,38 @@ class ArenaManager{
 			return true;
 			break;
 			case self::STAT_RUN:
-			    $this->time = 12000;
-				$time = $this->time - 12000;
-			    $level = $this->getLevel();
+			$level = $this->getLevel();
+
 			//just to make sure it works
 			$this->removeY($this->getSpawn1(), true, null, 4);
 			$this->removeY($this->getSpawn2(), true, null, 4);
 
 			if(!is_null($level)){
 				foreach($level->getPlayers() as $p){
-				    $data = $this->getData();
-				    $name = $data["world"];
-				    $map = $this->getServer()->getLevelByName($name);
+				    //A cool message
 
-				    $bar = new BossBar();
-				    $bar->setTitle("§l§e§oTHEBRIDGE");
-				    $bar->setPercentage(0.5);
-				    $bar->addPlayer($p);
-
-				    $goal = new Config($this->getPlugin()->getDataFolder() . "goals.yml", Config::YAML);
-                    $goal->getAll();
-                    $kills = new Config($this->getPlugin()->getDataFolder() . "kills.yml", Config::YAML);
-                    $kills->getAll();
-
-				    $api = Scoreboards::getInstance();
-				    $api->new($p, "TheBridge", T::BOLD . T::GOLD . "THEBRIDGE" . T::RESET . T::GREEN . " ");
-				    $api->setLine($p, 1, T::GRAY." ".date("d/m/Y").T::BLACK." ");
-				    
-				    $api->setLine($p, 2, T::WHITE."Hello§7, " . $p->getName);
-				    
-				    $api->setLine($p, 4, T::RED."   ");
-				    $api->setLine($p, 5, T::RED."RED TEAM ".T::GREEN.$this->ponts["red"]);
-				    $api->setLine($p, 6, T::BLUE."BLUE TEAM ".T::GREEN.$this->ponts["blue"] . "§a/5");
-				    
-				    $api->setLine($p, 7, T::RED."       ");
-				    
-				    $api->setLine($p, 9, T::WHITE."Goals§7: " . $goal->get($p->getName(), 0));
-				    
-				    $api->setLine($p, 9, T::WHITE."Kills§7: " . $kill->get($p->getName(), 0));
-				    
-				    $api->setLine($p, 7, T::RED."          ");
-				    
-				    $api->setLine($p, 8, T::GREEN."§rMode:".T::GREEN.$this->data["mode"]);
-				    
-				    $api->setLine($p, 9, T::RED."                ");
-				    
-				    $api->setLine($p, 10, T::YELLOW."Silhouette.mcpe.lol");
-				    
-				    $api->getObjectiveName($p);
-			
-			if($time <= 0){
-			    $player = $p();
-				$this->stat = self::STAT_GANHO;
-		    $config = new Config($this->getPlugin()->getDataFolder() . "kills.yml", Config::YAML);
-            $config->getAll();
-            $config->set($player->getName(), $config->remove($player->getName(), "               "));
-            $config->set($player->getName(), $config->remove($player->getName(), "0"));
-            $config->save();
-		    $gconfig = new Config($this->getPlugin()->getDataFolder() . "goals.yml", Config::YAML);
-            $gconfig->getAll();
-            $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "               "));
-            $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "0"));
-            $gconfig->save();
+//Scoreboard
+$day = date("d");
+$month = date("m");
+$year = date("Y");
+$team = $this->setRadomTeam($p);
+$api = Scoreboards::getInstance();
+$p->setGamemode(Player::SURVIVAL);
+$map = $p->getLevel()->getFolderName();
+$api->new($p, "TheBridge",  "§e§lTheBridge");
+$api->setLine($p, 2, "§7$day/$month/$year");
+$api->setLine($p, 3, "          ");
+$api->setLine($p, 4, "§9Blue Team: §e".$this->ponts["blue"].T::GRAY."/5");
+$api->setLine($p, 5, "§cRed Team: §e".$this->ponts["red"].T::GRAY."/5");
+$api->setLine($p, 6,"     ");
+$api->setLine($p, 7, "§rPlayers: §a".count($this->players));
+$api->setLine($p, 8,T::RED."§rNick: ".T::GREEN.$p->getName());
+$api->setLine($p, 9, "          ");
+$api->setLine($p, 10, "§rMode:§a ".ucwords($this->data["mode"]));
+$api->setLine($p, 11, "§rMap: §a$map");
+$api->getObjectiveName($p);
 				}
 			}
-		}
 			
 			$this->initPlayers();
 			break;
@@ -395,10 +400,10 @@ class ArenaManager{
 			$this->time--;
 			if($this->time <= 0){
 				$this->stat = self::STAT_RUN;
-				$this->broadcast("§l§eSCORE §r\n§7  §9Blue§r§f " . $this->ponts["blue"] . " §7vs §cRed§r§f " . $this->ponts["red"] . "§8\n§8\n§8\n§8\n", 2);
+				$this->broadcast("§r\n§7  §1Blue§r§f " . $this->ponts["blue"] . " §7vs §cRed§r§f " . $this->ponts["red"] . "§8\n§8\n§8\n§8\n", 2);
 				$this->startGame();
 			} else {
-				$this->broadcast("§l§6" . $this->time . "§r§8\n§8\n§8\n§8\n§8", 2);
+				$this->broadcast("§l§c" . $this->time . "§r§8\n§8\n§8\n§8\n§8", 2);
 			}
 			return true;
 			break;
@@ -408,17 +413,6 @@ class ArenaManager{
 			if($this->segs <= 0){
 				$players = $this->getPlayers();
 				foreach($players as $name => $pl){
-				    $players = $pl();
-		    $config = new Config($this->getPlugin()->getDataFolder() . "kills.yml", Config::YAML);
-            $config->getAll();
-            $config->set($player->getName(), $config->remove($player->getName(), "               "));
-            $config->set($player->getName(), $config->remove($player->getName(), "0"));
-            $config->save();
-		    $gconfig = new Config($this->getPlugin()->getDataFolder() . "goals.yml", Config::YAML);
-            $gconfig->getAll();
-            $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "               "));
-            $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "0"));
-            $gconfig->save();
 					$p = $this->plugin->getServer()->getPlayerExact($name);
 					if(is_null($p)){
 						unset($this->players[$name]);
@@ -857,30 +851,28 @@ class ArenaManager{
 		if(!$this->isInArena($player)){
 			return false;
 		}
-		
 		$player->getInventory()->clearAll();
-		$player->getArmorInventory()->clearAll();
-		$player->getCursorInventory()->clearAll();
-		$player->setFood(20);
-		$player->setHealth(20);
-		$player->setGamemode(0);
+		$this->getPlugin()->deleteInArena($player);
+$player->getArmorInventory()->clearAll();
+$player->getCursorInventory()->clearAll();
+$player->setFood(20);
+$player->setHealth(20);
+$player->setGamemode(2);
+$api = Scoreboards::getInstance();
+$api->remove($player);
+//$this->getPlugin()->removeInArena($player);
 		$player->removeAllEffects();
 		$player->setHealth($player->getMaxHealth());
+		$player->setFood(20);
+		$player->sendMessage( "§7Successfully left from the match!");
 		//Just to make sure it clears
 		  $inv = $player->getInventory();
 		  $inv->clearAll();
+		//Removing the player
 		$this->getTeamData()->removePlayerTeam($name);
-		  
-		    $config = new Config($this->plugin->getDataFolder() . "kills.yml", Config::YAML);
-            $config->getAll();
-            $config->set($player->getName(), $config->remove($player->getName(), "               "));
-            $config->set($player->getName(), $config->remove($player->getName(), "0"));
-            $config->save();
-		    $gconfig = new Config($this->plugin->getDataFolder() . "goals.yml", Config::YAML);
-            $gconfig->getAll();
-            $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "               "));
-            $gconfig->set($player->getName(), $gconfig->remove($player->getName(), "0"));
-            $gconfig->save();
+
+                        $player->teleport($this->getServer()->getDefaultLevel()->getSafeSpawn());
+                        $player->removeAllEffects();
 
 		
 		if(isset($this->nametag[$name])){
@@ -891,7 +883,7 @@ class ArenaManager{
 		
 		unset($this->players[$name]);
 		if($msg){
-			$player->sendMessage("§gYou left the arena.");
+
 		}
 	}
 	
