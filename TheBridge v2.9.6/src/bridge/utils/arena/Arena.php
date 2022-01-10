@@ -4,6 +4,7 @@ namespace bridge\utils\arena;
 
 use pocketmine\event\Listener;
 
+use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerDeathEvent;
@@ -134,6 +135,15 @@ class Arena implements Listener{
 				$e->setBlockList($arr);
 			}
 		}
+	}
+	
+	public function onHunger(PlayerExhaustEvent $e){
+		$p = $e->getPlayer();
+		$arena = $this->getPlugin()->getPlayerArena($p);
+		if(is_null($arena)){
+			return true;
+		}
+		$e->setCancelled(true);
 	}
 	
 	
