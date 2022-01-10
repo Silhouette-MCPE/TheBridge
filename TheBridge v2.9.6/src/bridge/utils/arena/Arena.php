@@ -4,6 +4,7 @@ namespace bridge\utils\arena;
 
 use pocketmine\event\Listener;
 
+use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -317,6 +318,17 @@ class Arena implements Listener{
                 }
         }
    }
+
+	 public function onConsume(PlayerItemConsumeEvent $e){
+		$p = $e->getPlayer();
+		$arena = $this->getPlugin()->getPlayerArena($p);
+		if(is_null($arena)){
+			return true;
+		}
+		if ($e->getItem() === Item::GOLDEN_APPLE){
+			$e->getPlayer()->setHealth(20);
+		}
+	 }
 
    public function onC(PlayerCommandPreprocessEvent $e){
     	$p = $e->getPlayer();
