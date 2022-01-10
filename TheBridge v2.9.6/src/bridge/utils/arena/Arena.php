@@ -307,7 +307,17 @@ class Arena implements Listener{
 			break;
 		}
 	}
-	
+ 
+   public function onFall(EntityDamageEvent $e){
+        $p = $e->getEntity();
+        $c = $e->getCause();
+        if($p instanceof Player){
+                if($c == EntityDamageEvent::CAUSE_FALL){
+                        $e->setCancelled(true);
+                }
+        }
+   }
+
    public function onC(PlayerCommandPreprocessEvent $e){
     	$p = $e->getPlayer();
     	$arena = $this->getPlugin()->getPlayerArena($p);
