@@ -169,7 +169,7 @@ class Arena implements Listener{
 	
 	public function onDeath(PlayerDeathEvent $e){
 		$p = $e->getPlayer()->getName();
-		$e->setDeathMessage(TextFormat:: BLUE . $p . TextFormat::RED . " died!");
+		$e->setDeathMessage(TextFormat::BLUE . $p . TextFormat::RED . " died!");
 
 		        }
 	
