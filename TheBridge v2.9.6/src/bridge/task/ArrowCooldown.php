@@ -14,6 +14,6 @@ class ArrowCooldown extends Task {
     }
 
     public function onRun($tick){
-        $this->plugin->timer(3);
+        $this->plugin->timer(5);
     }
 }
