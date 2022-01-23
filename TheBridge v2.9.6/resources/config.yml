@@ -1,0 +1,28 @@
+#   _____          _              __      __   _     _ _                    _ 
+#  / ____|        | |             \ \    / /  (_)   | | |                  | |
+# | |    _   _ ___| |_ ___  _ __ __\ \  / ___  _  __| | |     _____   _____| |
+# | |   | | | / __| __/ _ \| '_ ` _ \ \/ / _ \| |/ _` | |    / _ \ \ / / _ | |
+# | |___| |_| \__ | || (_) | | | | | \  | (_) | | (_| | |___|  __/\ V |  __| |
+#  \_____\__,_|___/\__\___/|_| |_| |_|\/ \___/|_|\__,_|______\___| \_/ \___|_|
+#
+#Configuration File
+
+#Set the y-level for the void level (min = -40, eg. -20)
+void-y-level: 10
+
+#Payload (what should happen if player is at that y-level?)
+payload:
+
+ #Run a command when at the y-level
+ command-enabled: false
+ #Delay after death to run command (in ticks)
+ command-delay: 40
+ #If set to true above, the commands needed to run need to be listed below
+ #They will be run one by one in console
+ #To use the player's name in a command, use {player}
+ #Example: msg {player} Hello!
+ commands:
+  - ""
+ 
+ #Kills the player at that y-level
+ kill-enabled: true
