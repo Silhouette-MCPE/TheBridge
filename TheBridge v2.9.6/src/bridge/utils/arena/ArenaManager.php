@@ -48,7 +48,9 @@ class ArenaManager{
 	private $players = [];
 	
 	public $stat = 0;
-	
+	public $config;
+        public $player;
+  
 	private $time = 0;
 	private $times = 0;
 	
@@ -102,6 +104,69 @@ class ArenaManager{
 		return $this->plugin->getConfig()->getAll();
 
 	}
+	
+	 public function onEnable()
+  {
+    $this->getServer()->getPluginManager()->registerEvents($this, $this);
+    $this->saveResource("config.yml");
+    $this->config = new Config($this->getDataFolder() . "config.yml", Config::YAML);   
+  }
+  
+  public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args): bool
+  {
+    if (!$sender instanceof Player) return true;
+    if ($cmd->getName() !== "void") return true;
+    if (!$sender->hasPermission("customvoidlevel.void")) return true;
+    if (!isset($args[0])){
+      $sender->sendMessage(TF::RED . "Usage: /void <y-level | reset>");
+      return true;
+    }
+    $coord = (int)$args[0];
+    if ($coord >= -41 && $coord < 40){
+      $this->config->set("void-y-level", $coord);
+      $this->config->save();
+      $sender->sendMessage(TF::GREEN . "Successfully set the void level to {$args[0]}.");
+      $this->config->reload();
+    }
+    if ($args[0] === "reset"){
+      $this->config->set("void-y-level", 0
+      $this->config->save();
+      $sender->sendMessage(TF::GREEN . "Successfully reset the void level.");      
+      $this->config->reload();
+    }
+    return true; 
+  }
+  
+  public function onDamage(EntityDamageEvent $event)
+  {
+    $entity = $event->getEntity();
+    if(!$entity instanceof Player) return;
+    if ($entity->getY() >= 0) return;
+    if($event->getCause() !== EntityDamageEvent::CAUSE_VOID) return;
+    $event->setCancelled();
+  }
+  
+  public function onMove(PlayerMoveEvent $event)
+  {
+    $player = $event->getPlayer();
+    $playerY = $player->getY();
+    if ($this->config->get("void-y-level") < -41 || $this->config->get("void-y-level") > 40) return;
+    if ($playerY >= $this->config->get("void-y-level")) return;
+    if ($this->config->get("payload")["kill-enabled"] === true) $player->kill();
+    if ($this->config->get("payload")["command-enabled"] === true){
+      $this->player = $player;
+      $this->getScheduler()->scheduleDelayedTask(new ClosureTask(
+        function(int $currentTick): void{
+          foreach ($this->config->getNested("payload")["commands"] as $command){
+            if (!is_null($command)){
+                $formattedcommand = str_replace("{player}", "{$this->player->getName()}", $command);
+                $this->getServer()->dispatchCommand(new ConsoleCommandSender(), "$formattedcommand");
+            }
+          }
+        }
+      ), $this->config->get("payload")["command-delay"]);
+    }
+  }
 	
 	public function getPos1($v = true){
 		$data = $this->getData();
