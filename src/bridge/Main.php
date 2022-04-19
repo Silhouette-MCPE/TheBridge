@@ -3,6 +3,7 @@
 namespace bridge;
 
 use bridge\Commands\TheBridgeCommand;
+use bridge\Commands\VoidCommand;
 use bridge\task\BridgeTask;
 use bridge\task\NPC;
 use bridge\task\UpdateTask;
@@ -62,7 +63,8 @@ class Main extends PluginBase{
 		$this->initResources();
 		$this->initArenas();
         $this->registerCommands([
-            new TheBridgeCommand()
+            new TheBridgeCommand(),
+            new VoidCommand()
         ]);
 		$this->registerEntities([MainEntity::class]);
 		$this->getScheduler()->scheduleRepeatingTask(new BridgeTask(), 20);
@@ -103,7 +105,7 @@ class Main extends PluginBase{
 						@unlink("$src" . $file);
 						continue;
 					}
-					$this->arenas[strtolower($data["name"])] = new ArenaManager($this, $data);
+					$this->arenas[strtolower($data["name"])] = new ArenaManager($data);
 					$count++;
 				}
 			}
@@ -187,7 +189,7 @@ class Main extends PluginBase{
 		
 		$data = ["name" => $name, "mode" => $mode, "world" => $p->getLevel()->getName(), "waiting-point" => $pos, "pos1" => $pos1, "pos2" => $pos2, "spawn1" => $spawn1, "spawn2" => $spawn2, "respawn1" => $respawn1, "respawn2" => $respawn2];
 		
-		$arena = new ArenaManager($this, $data);
+		$arena = new ArenaManager($data);
 		
 		$this->arenas[strtolower($name)] = $arena;
 				
