@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace bridge\Entity;
 use pocketmine\utils\TextFormat;
-use pocketmine\level\Level;
+use pocketmine\world\World;
 use pocketmine\entity\Skin;
 use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
-use pocketmine\{Server, Player};
+use pocketmine\player\Player;
 
 final class EntityManager
 {

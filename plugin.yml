@@ -4,28 +4,44 @@ api: [4.0.0]
 main: bridge\Main
 author: Chr4st
 description: Project Promise's The Bridge Plugin
-commands:
- tb:
-  description: "TheBridge Main Commands!"
 
 permissions:
   tb.cmd:
     description: "Allows you to use all TheBridge commands"
+    default: true
+  tb.help:
+    description: "Allows you use /tb help command."
+    default: true
   tb.pos1:
     description: "Allows you use /tb pos1 command."
+    default: op
   tb.pos2:
     description: "Allows you use /tb pos2 command."
+    default: op
   tb.spawn1:
     description: "Allows you use /tb spawn1 command."
+    default: op
   tb.spawn2:
     description: "Allows you use /tb spawn2 command."
+    default: op
   tb.respawn1:
     description: "Allows you use /tb respawn1 command."
+    default: op
   tb.respawn2:
     description: "Allows you use /tb respawn2 command."
+    default: op
   tb.spawn:
     description: "Allows you use /tb spawn command."
-  tb.leaderboard:
-    description: "Allows you use /tb leaderboard command."
+    default: op
+  tb.create:
+    description: "Allows you use /tb create command"
+    default: op
   tb.npc:
     description: "Allows you use /tb npc command."
+    default: op
+  tb.delete:
+    description: "Allows you to use /tb delete command"
+    default: op
+  tb.leaderboard:
+    description: "Allows you use /tb leaderboard command."
+    default: op
