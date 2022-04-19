@@ -2,45 +2,39 @@
 
 namespace bridge\utils\arena;
 
+use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityShootBowEvent;
-use pocketmine\level\Position;
-use pocketmine\Player;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
+use pocketmine\player\GameMode;
+use pocketmine\player\Player;
+use pocketmine\Server;
+use pocketmine\world\Position;
 
-use pocketmine\plugin\PluginBase;
-use pocketmine\command\{Command, ConsoleCommandSender, CommandSender};
-use pocketmine\scheduler\{ClosureTask, TaskScheduler};
-use pocketmine\event\{player\PlayerMoveEvent, entity\EntityDamageEvent, Listener};
+use pocketmine\command\{Command, CommandSender};
+use pocketmine\console\ConsoleCommandSender;
+use pocketmine\scheduler\ClosureTask;
+use pocketmine\event\{Listener, player\PlayerMoveEvent, entity\EntityDamageEvent};
 use pocketmine\utils\{TextFormat as TF, Config};
-use pocketmine\{Player, Server};
 use pocketmine\math\Vector3;
 use pocketmine\math\Vector2;
 
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\DoubleTag;
-
-use pocketmine\event\entity\EntityDamageEvent;
-
 use pocketmine\block\Block;
 use pocketmine\item\Item;
-use pocketmine\entity\Effect;
 use pocketmine\item\enchantment\Enchantment;
 
-use pocketmine\utils\Color;
 use pocketmine\utils\TextFormat as T;
-use Scoreboards\Scoreboards;
+//TODO: Integrate new scoreboard plugin/make my own
+//use Scoreboards\Scoreboards;
 use pocketmine\item\enchantment\EnchantmentInstance;
-
-
 
 use bridge\utils\Team;
 use bridge\utils\Utils;
 use bridge\Main;
 
-class ArenaManager{
+class ArenaManager implements Listener
+{
 	
 	const STAT_ESPERA = 0;
 	const STAT_STATING = 1;
@@ -50,111 +44,78 @@ class ArenaManager{
 	const STAT_RESTART = 5;
 	const STAT_GANHO = 6;
 	
-	private $players = [];
+	private array $players = [];
 	
-	public $stat = 0;
-	public $config;
-        public $player;
+	public int $stat = 0;
+	public static Config $config;
+    public Player $player;
   
-	private $time = 0;
-	private $times = 0;
+	private int $time = 0;
+	private int $times = 0;
 	
-	public $plugin;
-	private $nametag = [];
-	
-	public function __construct(Main $plugin, $data){
-		$this->plugin = $plugin;
+	private array $nametag = [];
+    private array $data;
+
+    public function __construct($data){
 		$this->data = $data;
 		$this->initMapa();
 		$this->reset(false);
+        $this->getServer()->getPluginManager()->registerEvents($this, Main::getInstance());
 	}
 	
-	public function getUtils(){
-		return (new Utils($this->plugin));
-	}
+	public function getUtils(): Utils
+    {
+        return (new Utils());
+    }
 	
-	public function getPlugin(){
-		return $this->plugin;
-	}
-	
-	public function initMapa(){
+	public function initMapa(): void{
 		$utils = $this->getUtils();
 		$map = $this->data["world"];
 		if($utils->backupExists($map)){
 			$this->resetMap();
-			return true;
+			return;
 		}
-		$utils->backupMap($map, $this->plugin->getDataFolder());
+		$utils->backupMap($map, Main::getInstance()->getDataFolder());
 	}
 	
-	public function resetMap(){
+	public function resetMap(): void
+    {
 		$utils = $this->getUtils();
 		$map = $this->data["world"];
 		$utils->resetMap($map);
 	}
 	
-	public function getServer(){
-		return $this->plugin->getServer();
+	public function getServer(): Server
+    {
+		return Main::getInstance()->getServer();
 	}
 	
-	public function getData(){
+	public function getData(): array{
 		return $this->data;
 	}
 	
-	public function getPlayers(){
+	public function getPlayers(): array{
 		return $this->players;
 	}
 	
-	public function getConfig(){
-		return $this->plugin->getConfig()->getAll();
+    public function getConfig(): array{
+        return Main::getInstance()->getConfig()->getAll();
+    }
 
-	}
-	
-	 public function onEnable()
-  {
-    $this->getServer()->getPluginManager()->registerEvents($this, $this);
-    $this->saveResource("config.yml");
-    $this->config = new Config($this->getDataFolder() . "config.yml", Config::YAML);   
-  }
-  
-  public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args): bool
-  {
-    if (!$sender instanceof Player) return true;
-    if ($cmd->getName() !== "void") return true;
-    if (!$sender->hasPermission("customvoidlevel.void")) return true;
-    if (!isset($args[0])){
-      $sender->sendMessage(TF::RED . "Usage: /void <y-level | reset>");
-      return true;
-    }
-    $coord = (int)$args[0];
-    if ($coord >= -41 && $coord < 40){
-      $this->config->set("void-y-level", $coord);
-      $this->config->save();
-      $sender->sendMessage(TF::GREEN . "Successfully set the void level to {$args[0]}.");
-      $this->config->reload();
-    }
-    if ($args[0] === "reset"){
-      $this->config->set("void-y-level", 0
-      $this->config->save();
-      $sender->sendMessage(TF::GREEN . "Successfully reset the void level.");      
-      $this->config->reload();
-    }
-    return true; 
-  }
-  
-  public function onDamage(EntityDamageEvent $event)
+
+  public function onDamage(EntityDamageEvent $event): void
   {
     $entity = $event->getEntity();
     if(!$entity instanceof Player) return;
-    if ($entity->getY() >= 0) return;
+    if ($entity->getPosition()->getY() >= 0) return;
     if($event->getCause() !== EntityDamageEvent::CAUSE_VOID) return;
-    $event->setCancelled();
+    $event->cancel();
   }
   
-  public function onMove(PlayerMoveEvent $event)
+  public function onMove(PlayerMoveEvent $event): void
   {
     $player = $event->getPlayer();
-    $playerY = $player->getY();
+    $playerY = $player->getPosition()->getY();
     if ($this->config->get("void-y-level") < -41 || $this->config->get("void-y-level") > 40) return;
     if ($playerY >= $this->config->get("void-y-level")) return;
     if ($this->config->get("payload")["kill-enabled"] === true) $player->kill();
@@ -429,7 +390,6 @@ $api->getObjectiveName($p);
 
 			}
 			return true;
-			break;
 			case self::STAT_RUN:
 			$level = $this->getLevel();
 
@@ -441,7 +401,8 @@ $api->getObjectiveName($p);
 				foreach($level->getPlayers() as $p){
 				    //A cool message
 
-//Scoreboard
+//TODO: Interate new method of scoreboard
+                    /*
 $day = date("d");
 $month = date("m");
 $year = date("Y");
@@ -461,6 +422,7 @@ $api->setLine($p, 9, "          ");
 $api->setLine($p, 10, "§rMode:§a ".ucwords($this->data["mode"]));
 $api->setLine($p, 11, "§rMap: §a$map");
 $api->getObjectiveName($p);
+                    */
 				}
 			}
 			
@@ -971,29 +933,30 @@ $api->remove($player);
 		} else {
 			return false;
 		}
-		$player->setGamemode(Player::ADVENTURE);
-		$player->removeAllEffects();
+		$player->setGamemode(GameMode::ADVENTURE());
+		$player->getEffects()->clear();
 		$this->getServer()->getCommandMap()->dispatch($player, "sh off"); 
 		$player->setHealth($player->getMaxHealth());
-		$player->setFood(20);
+        $player->getHungerManager()->setFood(20);
 		$player->setAllowFlight(false);
-		$this->getPlugin()->addInArena($player);
+		Main::getInstance()->addInArena($player);
 		  $inv = $player->getInventory();
 		 
 		  $inv->clearAll();
-		  $inv->setItem(0, Item::get(44, 0, 1));
+		  $inv->setItem(0, VanillaBlocks::STONE_SLAB()->asItem());
 		 
 		 $inv = $player->getInventory();
 		 $inv->clearAll();
-		 
-		 $inv->setItem(8, Item::get(355, 0, 1)->setCustomName("§cLobby"));
+
+
+		 $inv->setItem(8, VanillaItems::RED_BED()->setCustomName("§cLobby"));
 		 
 		 
 		 $spawn = $this->getSpawn();
 		 if(!is_null($spawn)){
 		 	$player->teleport($spawn);
-		 	$player->setGamemode(Player::ADVENTURE);
-		 	$inv->setItem(8, Item::get(355, 0, 1)->setCustomName("§cLobby"));
+		 	$player->setGamemode(GameMode::ADVENTURE());
+		 	$inv->setItem(8, VanillaItems::RED_BED()->setCustomName("§cLobby"));
 		 }
 		
 		$name = strtolower($player->getName());
@@ -1007,7 +970,7 @@ $api->remove($player);
 	public function respawnPlayer($p, $v = true){
 		$name = strtolower($p->getName());
 		$this->addItens($p, $v);
-		$p->setGamemode(Player::SURVIVAL);
+		$p->setGamemode(GameMode::SURVIVAL());
 		
 		$team = $this->getTeam($name);
 		if(!is_null($team)){
@@ -1025,7 +988,7 @@ $api->remove($player);
 	}
 	public function addItens($p, $v = true){
 		
-		$p->setGamemode(Player::ADVENTURE);
+		$p->setGamemode(GameMode::ADVENTURE());
 		$p->setHealth($p->getMaxHealth());
 		$p->setFood(20);
 		
@@ -1071,42 +1034,12 @@ $api->remove($player);
 	
 		$arco = Item::get(261, 0, 1);
 		$flecha = Item::get(262, 0, 64);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		$food2 = Item::get(322, 4, 5);
+        $food2 = VanillaItems::GOLDEN_APPLE();
 		$block = Item::get(159, $damage, 64);
 		
 		$inv->setItem(0, $esp);
 		$inv->setItem(2, $pic);
-		$p->setGamemode(Player::ADVENTURE);
+		$p->setGamemode(GameMode::ADVENTURE());
 		$inv->setItem(1, $arco);
 		
 		$inv->setItem(3, $block);

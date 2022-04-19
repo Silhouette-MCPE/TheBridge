@@ -45,3 +45,6 @@ permissions:
   tb.leaderboard:
     description: "Allows you use /tb leaderboard command."
     default: op
+  tb.void:
+    description: "Allows you use /void command"
+    default: op
