@@ -10,39 +10,40 @@ use bridge\utils\arena\Arena;
 use bridge\utils\arena\ArenaManager;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
 use pocketmine\entity\Entity;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 
 use pocketmine\utils\Config;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as T;
 use pocketmine\math\Vector3;
 
-use Scoreboards\Scoreboards;
+//TODO: Find what the hell this is and see whether I need to code my own scoreboard handler
+//use Scoreboards\Scoreboards;
 
 class Main extends PluginBase{
 	
-	public $arenas = [];
-	public $eco;
-	public $leaderboard;
-	public $prefix = T::WHITE."[".T::YELLOW."TheBridge".T::WHITE."]";
-	public $win;
-	private static $data = ['inarena' => []];
-	private $particles = [];
-	private $pos1 = [];
-	private $pos2 = [];
-	private $pos = [];
-	private $spawn1 = [];
-	private $spawn2= [];
-	private $respawn1= [];
-	private $respawn2= [];
+	public array $arenas = [];
+	//TODO: Say goodbye to EconomyAPI ?
+    //public EconomyAPI $eco;
+	public array $leaderboard;
+	public string $prefix = T::WHITE."[".T::YELLOW."TheBridge".T::WHITE."]";
+	public Config $win;
+	private static array $data = ['inarena' => []];
+	private array $particles = [];
+	private array $pos1 = [];
+	private array $pos2 = [];
+	private array $pos = [];
+	private array $spawn1 = [];
+	private array $spawn2= [];
+	private array $respawn1= [];
+	private array $respawn2= [];
 	
-	public function onEnable(){
+	public function onEnable(): void{
 	    $this->win = new Config($this->getDataFolder(). "win.yml", Config::YAML);
         $this->leaderboard = (new Config($this->getDataFolder()."leaderboard.yml", Config::YAML))->getAll();
 		$this->initResources();
@@ -67,17 +68,18 @@ class Main extends PluginBase{
         $this->getServer()->getLogger()->info("§a[TheBridge" . TextFormat::GOLD . "" . TextFormat::RESET . "I've added a kill message to the bridge game");
     }
 	
-	public function onDisable(){
+	public function onDisable(): void{
 		$this->close();
 	}
 	
-	private function initResources(){
+	private function initResources(): void{
 		@mkdir($this->getDataFolder());
 		@mkdir($this->getDataFolder() . "mapas/");
 		@mkdir($this->getDataFolder() . "arenas/");
 	}
 	
-	private function initArenas(){
+	private function initArenas(): int
+    {
 		$src = $this->getDataFolder() . "arenas/";
 		$count = 0;
 		foreach(scandir($src) as $file){
@@ -96,7 +98,7 @@ class Main extends PluginBase{
 		return $count;
 	}
 
-	public function getPlayerArena(Player $p){
+	public function getPlayerArena(Player $p): ?array{
 		$arenas = $this->arenas;
 		if(count($arenas) <= 0){
 			return null;
@@ -109,7 +111,7 @@ class Main extends PluginBase{
 		return null;
 	}
 	
-	public function updateArenas($value = false){
+	public function updateArenas($value = false): bool{
 		if(count($this->arenas) <= 0){
 			return false;
 		}
@@ -118,29 +120,29 @@ class Main extends PluginBase{
 		}
 	}
 	
-	private function close(){
+	private function close(): void{
 		foreach($this->arenas as $name => $arena){
 			$arena->close();
 		}
 	}
 	
-	public static function getInArena(){
+	public static function getInArena(): int{
 		return count(self::$data['inarena']);
 	}
 
-	public function addInArena(Player $player){
+	public function addInArena(Player $player): void{
 		if (!isset(self::$data['inarena'][$player->getName()])) {
 			self::$data['inarena'][$player->getName()] = $player->getName();
 		}
 	}
 
-	public function deleteInArena(Player $player){
+	public function deleteInArena(Player $player): void{
 		if (isset(self::$data['inarena'][$player->getName()])) {
 			unset(self::$data['inarena'][$player->getName()]);
 		}
 	}
 	
-	public function join($player, $mode = "solos"){
+	public function join($player, $mode = "solos"): bool{
 		foreach($this->arenas as $name => $arena){
 			if($arena->getData()["mode"] == $mode){
 				if($arena->join($player)){
@@ -152,7 +154,7 @@ class Main extends PluginBase{
 		return false;
 	}
 	
-	public function createBridge($name, $p, $pos1, $pos2, $spawn1, $spawn2, $respawn1, $respawn2, $pos, $mode = "solos"){
+	public function createBridge($name, $p, $pos1, $pos2, $spawn1, $spawn2, $respawn1, $respawn2, $pos, $mode = "solos"): bool{
 		$src = $this->getDataFolder();
 		if(file_exists($src . "arenas/" . strtolower($name) . ".yml")){
 			$p->sendMessage( T::RED." There is already an arena with that name");
@@ -171,7 +173,7 @@ class Main extends PluginBase{
 		return true;
 	}
 	
-	public function deleteBridge($name){
+	public function deleteBridge($name): bool{
 	    $src = $this->getDataFolder();
 		if(file_exists($src . "arenas/" . strtolower($name) . ".yml")){
 			if(unlink($src . "arenas/" . strtolower($name) . ".yml")){
@@ -409,7 +411,7 @@ class Main extends PluginBase{
 	return true;
 	}
 	
-	public function getLeaderBoard():string{
+	public function getLeaderBoard(): string{
 	    $solowin = $this->win->getAll();
 	    $message = "";
 	    $toptb = "§l§6TheBridge Leaderboard\n";
@@ -428,7 +430,7 @@ class Main extends PluginBase{
      return $return;
     }
 
-    public function getParticles():array{
+    public function getParticles(): array{
      return $this->particles;
     }
 }
