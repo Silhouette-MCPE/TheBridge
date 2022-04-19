@@ -56,7 +56,7 @@ class Main extends PluginBase{
 		$this->getScheduler()->scheduleRepeatingTask(new BridgeTask($this), 20);
 		$this->getScheduler()->scheduleRepeatingTask(new NPC(), 20);
 		$this->getServer()->getPluginManager()->registerEvents(new Arena($this), $this);
-        //TODO: Uncomment this when economy plugin added
+        //TODO: Uncomment this when economy plugin added :D
 		//$this->eco = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
         if(empty($this->leaderboard["positions"])){
         $this->getServer()->getLogger()->Info("§a[TheBridge] Plugin Enable! Please specify the position for the win leaderboard In-Game!");
