@@ -1,0 +1,32 @@
+name: TheBridge
+version: 2.9.6
+api: [3.0.0]
+main: bridge\Main
+author: Chr4st
+description: Project Promise's The Bridge Plugin
+commands:
+ tb:
+  description: "TheBridge Main Commands!"
+
+permissions:
+  tb.cmd:
+    description: "Allows you to use all TheBridge commands"
+    children:
+      tb.cmd.pos1:
+        description: "Allows you use /tb pos1 command."
+      tb.cmd.pos2:
+        description: "Allows you use /tb pos2 command."
+      tb.cmd.spawn1:
+        description: "Allows you use /tb spawn1 command."
+      tb.cmd.spawn2:
+        description: "Allows you use /tb spawn2 command."
+      tb.cmd.respawn1:
+        description: "Allows you use /tb respawn1 command."
+      tb.cmd.respawn2:
+        description: "Allows you use /tb respawn2 command."
+      tb.cmd.spawn:
+        description: "Allows you use /tb spawn command."
+      tb.cmd.leaderboard:
+        description: "Allows you use /tb leaderboard command."
+      tb.cmd.npc:
+        description: "Allows you use /tb npc command."

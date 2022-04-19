@@ -1,0 +1,13 @@
+
+void-y-level: 10
+
+payload:
+
+ command-enabled: false
+
+ command-delay: 40
+
+ commands:
+  - ""
+ 
+ kill-enabled: true
