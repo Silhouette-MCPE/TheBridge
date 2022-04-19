@@ -6,10 +6,11 @@ use bridge\Commands\TheBridgeCommand;
 use bridge\task\BridgeTask;
 use bridge\task\NPC;
 use bridge\task\UpdateTask;
-use bridge\Entity\{MainEntity, EntityManager};
+use bridge\Entity\MainEntity;
 use bridge\utils\arena\Arena;
 use bridge\utils\arena\ArenaManager;
 
+use JsonException;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\EntityFactory;
 use pocketmine\nbt\tag\CompoundTag;
@@ -17,13 +18,11 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\entity\Entity;
 
 use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
 
 use pocketmine\utils\Config;
 use pocketmine\player\Player;
 
 use pocketmine\utils\SingletonTrait;
-use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as T;
 use pocketmine\math\Vector3;
 use pocketmine\world\World;
@@ -192,8 +191,12 @@ class Main extends PluginBase{
 		$this->arenas[strtolower($name)] = $arena;
 				
 		$config->setDefaults($data);
-		$config->save();
-		return true;
+        try {
+            $config->save();
+        } catch (JsonException $e) {
+            $this->getLogger()->error($e);
+        }
+        return true;
 	}
 	
 	public function deleteBridge($name): bool{
@@ -224,8 +227,7 @@ class Main extends PluginBase{
        ++$i;
       }
      }
-     $return = (string) $toptb.$message;
-     return $return;
+     return $toptb.$message;
     }
 
     public function getParticles(): array{
