@@ -13,6 +13,7 @@ use bridge\utils\arena\ArenaManager;
 use JsonException;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\EntityFactory;
+use pocketmine\entity\Human;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\entity\Entity;
@@ -66,7 +67,7 @@ class Main extends PluginBase{
 		$this->registerEntities([MainEntity::class]);
 		$this->getScheduler()->scheduleRepeatingTask(new BridgeTask(), 20);
 		$this->getScheduler()->scheduleRepeatingTask(new NPC(), 20);
-		$this->getServer()->getPluginManager()->registerEvents(new Arena($this), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new Arena(), $this);
         //TODO: Uncomment this when economy plugin added :D
 		//$this->eco = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
         if(empty($this->leaderboard["positions"])){
@@ -119,7 +120,7 @@ class Main extends PluginBase{
         }
     }
 
-	public function getPlayerArena(Player $p): ?array{
+	public function getPlayerArena(Player|Human $p): mixed{
 		$arenas = $this->arenas;
 		if(count($arenas) <= 0){
 			return null;

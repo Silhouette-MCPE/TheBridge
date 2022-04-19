@@ -2,6 +2,10 @@
 
 namespace bridge\utils\arena;
 
+use JsonException;
+
+use pocketmine\entity\effect\EffectInstance;
+use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\event\Listener;
 
 use pocketmine\event\player\PlayerItemConsumeEvent;
@@ -16,55 +20,45 @@ use pocketmine\event\server\DataPacketReceiveEvent;
 
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\ProjectileHitEvent;
 use pocketmine\event\entity\EntityExplodeEvent;
 
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 
-use pocketmine\math\Vector3;
+use pocketmine\item\ItemIds;
 use pocketmine\math\Vector2;
-use pocketmine\item\Item;
-use pocketmine\block\Block;
 
-use pocketmine\entity\Arrow;
-use pocketmine\entity\Effect;
-use pocketmine\level\Explosion;
+use pocketmine\entity\projectile\Arrow;
 
-use pocketmine\Player;
-use bridge\{Main, Form\Form, Form\FormAPI, Entity\EntityManager, Entity\MainEntity};
+use pocketmine\player\Player;
+use bridge\{Main, Form\Form, Entity\MainEntity};
 use pocketmine\utils\TextFormat;
 
 class Arena implements Listener{
 	
-	public function __construct(Main $plugin){
-		$this->plugin = $plugin;
-	}
-	
-	public function getPlugin(){
-		return $this->plugin;
-	}
-	
-	
 	public function onMove(PlayerMoveEvent $e){
 		$p = $e->getPlayer();
 		$name = strtolower($p->getName());
-		
-		$this->plugin->win->save();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+
+        try {
+            Main::getInstance()->win->save();
+        } catch (JsonException $e) {
+            Main::getInstance()->getLogger()->error($e);
+        }
+        $arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
 		if($arena->stat < 3 or $arena->stat > 3){
-			return true;
+			return;
 		}
 		$pos = $arena->getPontPos($p);
-		if($p->distance($pos) <= 3){
+		if($p->getPosition()->distance($pos) <= 3){
 			$arena->addPont($p);
-			return true;
+			return;
 		}
 		$poss = $arena->getPontPos($p, false);
-		if($p->distance($poss) <= 3){
+		if($p->getPosition()->distance($poss) <= 3){
 			$p->getInventory()->clearAll();
 			$arena->respawnPlayer($p);
 			$p->sendMessage( " §cYou cannot score in your own goals!");
@@ -75,19 +69,17 @@ class Arena implements Listener{
 		if ($event->getEntity() instanceof MainEntity) {
 			$player = $event->getDamager();
 			if ($player instanceof Player) {
-				$event->setCancelled(true);
+				$event->cancel();
 				$form = new Form(function (Player $player, int $data = null) {
 					switch($data) {
 						case 0:
-							$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Solos");
+							Main::getInstance()->getServer()->dispatchCommand($player, "tb join Solos");
 						break;
 						case 1:
-							$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Duos");
+							Main::getInstance()->getServer()->dispatchCommand($player, "tb join Duos");
 						break;
 						case 2:
-							$this->getPlugin()->getServer()->dispatchCommand($player, "tb join Squads");
-						break;
-						case 3:
+							Main::getInstance()->getServer()->dispatchCommand($player, "tb join Squads");
 						break;
 					}
 				});
@@ -103,29 +95,29 @@ class Arena implements Listener{
 	
 	public function onBreak(BlockBreakEvent $e){
 		$p = $e->getPlayer();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
 		if($arena->stat < 3 or $arena->stat > 3){
-			$e->setCancelled();
-			return true;
+			$e->cancel();
+			return;
 		}
 		$b = $e->getBlock();
 		if($b->getId() !== 159){
-			$e->setCancelled();
+			$e->cancel();
 		}
 	}
 	
 	public function onExplode(EntityExplodeEvent $e){
 		$ent = $e->getEntity();
 		if($ent instanceof Arrow){
-			$p = $ent->shootingEntity;
-			
+            $p = $ent->getOwningEntity();
+
 			if($p instanceof Player){
-				$arena = $this->getPlugin()->getPlayerArena($p);
+				$arena = Main::getInstance()->getPlayerArena($p);
 				if(is_null($arena)){
-					return true;
+					return;
 				}
 				$arr = [];
 				foreach($e->getBlockList() as $block){
@@ -140,63 +132,60 @@ class Arena implements Listener{
 	
 	public function onHunger(PlayerExhaustEvent $e){
 		$p = $e->getPlayer();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
-		$e->setCancelled(true);
+		$e->cancel();
 	}
 	
 	
 	public function onPlace(BlockPlaceEvent $e){
 		$p = $e->getPlayer();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
 		if($arena->stat < 3 or $arena->stat > 3){
-			$e->setCancelled();
-			return true;
+			$e->cancel();
+			return;
 		}
 		$b = $e->getBlock();
 		$spawn = $arena->getSpawn1();
 		
-		if($b->y > ($spawn->y + 15)){
-			$e->setCancelled(false);
-			return true;
+		if($b->getPosition()->getY() > ($spawn->getY() + 15)){
+			$e->uncancel();
+			return;
 		}
 		$pos1 = $arena->getRespawn1(false);
 		$pos2 = $arena->getRespawn2(false);
 		$pos3 = $arena->getPos1(false);
 		$pos4 = $arena->getPos2(false);
-		$vector = new Vector2($b->x, $b->z);
+		$vector = new Vector2($b->getPosition()->getX(), $b->getPosition()->getZ());
 		
 		if(($vector->distance($pos1) <= 5) or ($vector->distance($pos3) <= 6) or ($vector->distance($pos4) <= 6) or ($vector->distance($pos2) <= 5 )){
-			$e->setCancelled(true);
-		} else {
-
+			$e->cancel();
 		}
 	}
 	
 	public function onDeath(PlayerDeathEvent $e){
 		$p = $e->getPlayer()->getName();
 		$e->setDeathMessage(TextFormat::BLUE . $p . TextFormat::RED . " died!");
-
-		        }
+    }
 	
 	public function onInteract(PlayerInteractEvent $e){
 		$p = $e->getPlayer();
 		$item = $e->getItem();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
 		$custom = $item->getCustomName();
 		$item = $e->getItem();
 			if($item->getId() == 355 and $custom == "§cLobby"){
-				$e->setCancelled();
+				$e->cancel();
 				$arena->quit($p);
-				$this->getPlugin()->deleteInArena($p);
+				Main::getInstance()->deleteInArena($p);
 		}
 	}
 	
@@ -204,37 +193,37 @@ class Arena implements Listener{
 		$ent = $e->getEntity();
 		if($ent instanceof Player){
 			$name = strtolower($ent->getName());
-			$arena = $this->getPlugin()->getPlayerArena($ent);
+			$arena = Main::getInstance()->getPlayerArena($ent);
 			if(is_null($arena)){
-				return true;
+				return;
 			}
 			if($arena->stat < 3 or $arena->stat > 3){
-				$e->setCancelled();
+				$e->cancel();
 				if($e->getCause() == 11){
 					if($arena->stat > 3){
 						$ent->getInventory()->clearAll();
 						$arena->respawnPlayer($ent, false);
-						return true;
+						return;
 					}
-					$level = $ent->getLevel();
+					$level = $ent->getWorld();
 					$ent->teleport($level->getSafeSpawn());
-					return true;
+					return;
 				}
 			}
 			if($e->getCause() == 4){
-				$e->setCancelled();
-				return true;
+				$e->cancel();
+				return;
 			}
 			if($e->getCause() == 10 or $e->getCause() == 9){
-				$e->setCancelled();
-				return true;
+				$e->cancel();
+				return;
 			}
 			if($e->getCause() == 11){
-				$e->setCancelled();
+				$e->cancel();
 				$ent->getInventory()->clearAll();
 				$ent->getArmorInventory()->clearAll();
 				$arena->respawnPlayer($ent);
-				return true;
+				return;
 			}
 			$cause = $ent->getLastDamageCause();
 			$damage = $e->getFinalDamage();
@@ -242,14 +231,14 @@ class Arena implements Listener{
 				$p = $e->getDamager();
 				if($p instanceof Player){
 					if($arena->isTeamMode() && $arena->isTeam($p, $ent)){
-						$e->setCancelled();
-						return true;
+						$e->cancel();
+						return;
 					}
 				}
 			}
-			
+
 			if(($ent->getHealth() - round($damage)) <= 1){
-				$e->setCancelled();
+				$e->cancel();
 				$ent->getInventory()->clearAll();
 				$ent->getArmorInventory()->clearAll();
 				$arena->respawnPlayer($ent);
@@ -258,33 +247,20 @@ class Arena implements Listener{
 					if($p instanceof Player){
 						$arena->broadcast( " §6" . $ent->getNameTag() . " §chas been killed by§6 " . $p->getNameTag(), 3);
 						if($arena->hasHab($p, "Nimator")){
-							$eff = Effect::getEffect(5);
-							$eff->setDuration(20*20);
-							$eff->setAmplifier(3);
-							
-							$p->addEffect($eff);
+							$eff = new EffectInstance(VanillaEffects::STRENGTH(), 400, 3);
+							$p->getEffects()->add($eff);
 						}
-						return true;
+						return;
 					}
 				}
 				$arena->broadcast( "§b > " . $ent->getNameTag() . " The game", 3);
-				return true;
 			}
-			switch($e->getCause()){
-				case 1:
-				case 2:
-				case 4:
-				case 11:
-				if($cause instanceof EntityDamageByEntityEvent){
-				}
-				break;
-			}
-}
+    }
 }
 	
 	public function onQuit(PlayerQuitEvent $e){
 		$p = $e->getPlayer();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(!is_null($arena)){
 			$arena->broadcast( " §c". $p->getNameTag() . " has left the game", 3);
 			
@@ -293,20 +269,18 @@ class Arena implements Listener{
 	}
 	
 	public function onData(DataPacketReceiveEvent $e){
-		$p = $e->getPlayer();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+        $p = $e->getOrigin()->getPlayer();
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
 		$packet = $e->getPacket();
 		$name = strtolower($p->getName());
-		switch($packet::NETWORK_ID){
-			case 0x29:
-			$e->setCancelled();
-			$item = $packet->item;
-			$p->getInventory()->addItem($item);
-			break;
-		}
+        if ($packet::NETWORK_ID == 0x29) {
+            $e->cancel();
+            $item = $packet->item;
+            $p->getInventory()->addItem($item);
+        }
 	}
  
    public function onFall(EntityDamageEvent $e){
@@ -314,53 +288,53 @@ class Arena implements Listener{
         $c = $e->getCause();
         if($p instanceof Player){
                 if($c == EntityDamageEvent::CAUSE_FALL){
-                        $e->setCancelled(true);
+                        $e->cancel();
                 }
         }
    }
 
 	 public function onConsume(PlayerItemConsumeEvent $e){
 		$p = $e->getPlayer();
-		$arena = $this->getPlugin()->getPlayerArena($p);
+		$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
-		if ($e->getItem() === Item::GOLDEN_APPLE){
+		if ($e->getItem()->getId() === ItemIds::GOLDEN_APPLE){
 			$e->getPlayer()->setHealth(20);
 		}
 	 }
 
    public function onC(PlayerCommandPreprocessEvent $e){
     	$p = $e->getPlayer();
-    	$arena = $this->getPlugin()->getPlayerArena($p);
+    	$arena = Main::getInstance()->getPlayerArena($p);
 		if(is_null($arena)){
-			return true;
+			return;
 		}
     	$cmd = strtolower($e->getMessage());
-    	if(substr($cmd, 0, 1) == "/"){
-    		if(!$p->hasPermission("bridge.cmd")){
-    			$e->setCancelled();
+    	if(str_starts_with($cmd, "/")){
+    		if(!$p->hasPermission("tb.cmd")){
+    			$e->cancel();
     		}
     		$args = explode(" ", $cmd);
     		if(substr($args[0], 1) == "tb"){
     			if(isset($args[1])){
     				if(strtolower($args[1]) == "leave"){
-    					$e->setCancelled();
-    					$arena->broadcast( " §c". $p->getNameTag() . " Has left the game", 3);
+    					$e->cancel();
+    					$arena->broadcast( " §c". $p->getNameTag() . " has left the game", 3);
         				$arena->quit($p);
     					$p->getInventory()->clearAll();
         				$p->getArmorInventory()->clearAll();
     
-    					return true;
+    					return;
     				}
     			}
     		} elseif(substr($args[0], 1) == "kill"){
-    			$e->setCancelled();
+    			$e->cancel();
     			$p->sendMessage( " §cuse /tb leave");
-    			return true;
+    			return;
     		}
-    		if(!$p->hasPermission("bridge.cmd")){
-    			$e->setCancelled();
+    		if(!$p->hasPermission("tb.cmd")){
+    			$e->cancel();
     			$p->sendMessage( " §cuse /tb leave");
     		}
     	}
