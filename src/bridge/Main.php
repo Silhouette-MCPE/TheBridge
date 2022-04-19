@@ -9,6 +9,9 @@ use bridge\Entity\{MainEntity, EntityManager};
 use bridge\utils\arena\Arena;
 use bridge\utils\arena\ArenaManager;
 
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\EntityFactory;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\entity\Entity;
 
@@ -21,6 +24,7 @@ use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as T;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 
 //TODO: Find what the hell this is and see whether I need to code my own scoreboard handler
 //use Scoreboards\Scoreboards;
@@ -48,11 +52,12 @@ class Main extends PluginBase{
         $this->leaderboard = (new Config($this->getDataFolder()."leaderboard.yml", Config::YAML))->getAll();
 		$this->initResources();
 		$this->initArenas();
-		Entity::registerEntity(MainEntity::class, true);
-		$this->getScheduler()->scheduleRepeatingTask($this->scheduler = new BridgeTask($this), 20);
-		$this->getScheduler()->scheduleRepeatingTask($this->scheduler = new NPC($this), 20);
+		$this->registerEntities([MainEntity::class]);
+		$this->getScheduler()->scheduleRepeatingTask(new BridgeTask($this), 20);
+		$this->getScheduler()->scheduleRepeatingTask(new NPC(), 20);
 		$this->getServer()->getPluginManager()->registerEvents(new Arena($this), $this);
-		$this->eco = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
+        //TODO: Uncomment this when economy plugin added
+		//$this->eco = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
         if(empty($this->leaderboard["positions"])){
         $this->getServer()->getLogger()->Info("§a[TheBridge] Plugin Enable! Please specify the position for the win leaderboard In-Game!");
         $this->getServer()->getLogger()->info("§a[TheBridge] This plugin was updated by Developers ");
@@ -97,6 +102,15 @@ class Main extends PluginBase{
 		}
 		return $count;
 	}
+
+    private function registerEntities(array $entities): void
+    {
+        foreach($entities as $entity){
+            EntityFactory::getInstance()->register($entity, function(World $world, CompoundTag $nbt) use ($entity): Entity {
+                return new $entity(EntityDataHelper::parseLocation($nbt, $world), $nbt);
+            }, ["a", "b", "c"]);
+        }
+    }
 
 	public function getPlayerArena(Player $p): ?array{
 		$arenas = $this->arenas;
