@@ -59,9 +59,7 @@ class Main extends PluginBase{
         //TODO: Uncomment this when economy plugin added :D
 		//$this->eco = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
         if(empty($this->leaderboard["positions"])){
-        $this->getServer()->getLogger()->Info("§a[TheBridge] Plugin Enable! Please specify the position for the win leaderboard In-Game!");
-        $this->getServer()->getLogger()->info("§a[TheBridge] This plugin was updated by Developers ");
-        $this->getServer()->getLogger()->info("§a[TheBridge] This plugin was updated by Developers  §Added: Void Death Message");
+            $this->getServer()->getLogger()->warning("Please specify the position for the win leaderboard In-Game!");
         return;
         }
         $pos = $this->leaderboard["positions"];
