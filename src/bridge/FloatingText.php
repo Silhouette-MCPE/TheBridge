@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace bridge;
 
-use pocketmine\level\particle\FloatingTextParticle;
+use pocketmine\world\particle\FloatingTextParticle;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 
 class FloatingText extends FloatingTextParticle{
 
-    public function __construct(Main $plugin, Vector3 $pos){
-     parent::__construct($pos, "", "");
-     $this->level = $plugin->getServer()->getDefaultLevel();
-     $this->pos = $pos;
+    private Vector3 $pos;
+    private ?World $level;
+
+    public function __construct(Vector3 $pos){
+        parent::__construct("");
+        $this->level = Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
+        $this->pos = $pos;
     }
 
     public function setText(string $text):void{
@@ -25,7 +29,7 @@ class FloatingText extends FloatingTextParticle{
     }
 
     public function update():void{
-     $this->level->addParticle($this);
+     $this->level->addParticle($this->pos, $this);
     }
 
 }

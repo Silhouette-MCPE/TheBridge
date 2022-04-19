@@ -9,13 +9,9 @@ use pocketmine\scheduler\Task;
 
 class UpdateTask extends Task{
 
-    public function __construct(Main $plugin){
-     $this->plugin = $plugin;
-    }
-
-    public function onRun($tick){
-     $lb = $this->plugin->getLeaderBoard();
-     $list = $this->plugin->getParticles();
+    public function onRun(): void{
+     $lb = Main::getInstance()->getLeaderBoard();
+     $list = Main::getInstance()->getParticles();
      foreach($list as $particle){
       $particle->setText($lb);
      }

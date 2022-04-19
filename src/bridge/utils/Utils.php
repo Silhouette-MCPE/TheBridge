@@ -2,37 +2,20 @@
 
 namespace bridge\utils;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use ZipArchive;
-use pocketmine\utils\Config;
-use pocketmine\level\Level;
-use pocketmine\nbt\NBT;
-use pocketmine\nbt\tag\{CompoundTag, StringTag};
-use pocketmine\level\generator\Generator;
-use pocketmine\utils\TextFormat;
-use pocketmine\Server;
 use bridge\Main;
 
 class Utils{
+
 	
-	private $plugin;
-	
-	public function __construct(Main $plugin){
-		$this->plugin = $plugin;
-	}
-	
-	public function getPlugin(){
-		return $this->plugin;
-	}
-	
-	public function getServer(){
-		return $this->plugin->getServer();
-	}
-	
-	public function backupMap($world, $src){
-		$path = $this->getServer()->getDataPath();
+	public function backupMap($world, $src): bool
+    {
+		$path = Main::getInstance()->getServer()->getDataPath();
 		$zip = new ZipArchive;
 		$zip->open($src . "mapas/$world.zip", ZipArchive::CREATE);
-		$files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path."worlds/$world"));
+		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path."worlds/$world"));
 		foreach($files as $file){
 			if(is_file($file)){
 				$zip->addFile($file, str_replace("\\", "/", ltrim(substr($file, strlen($path."worlds/$world")), "/\\")));
@@ -41,21 +24,23 @@ class Utils{
 		$zip->close();
 		return true;
 	}
-	
-	public function renameMap($old, $new){
-		if(!is_dir($old_dir = $this->getPlugin()->getServer()->getDataPath()."worlds/$old")){
+
+    //Unused
+	/*public function renameMap($old, $new): bool
+    {
+		if(!is_dir($old_dir = Main::getInstance()->getServer()->getDataPath()."worlds/$old")){
 			return false;
 		}
-		if(is_dir($new_dir = $this->getPlugin()->getServer()->getDataPath()."worlds/$new")){
+		if(is_dir($new_dir = Main::getInstance()->getServer()->getDataPath()."worlds/$new")){
 			return false;
 		}
-		if($this->getPlugin()->getServer()->getLevelByName($old) !== null){
-			$players = $this->getPlugin()->getServer()->getLevelByName($old)->getPlayers();
-			if($old === $this->getPlugin()->getServer()->getDefaultLevel()->getName() and count($players) > 0){
+		if(Main::getInstance()->getServer()->getWorldManager()->getWorldByName($old) !== null){
+			$players = Main::getInstance()->getServer()->getWorldManager()->getWorldByName($old)->getPlayers();
+			if($old === Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getFolderName() and count($players) > 0){
 				return false;
 			}
 			foreach($players as $player){
-				$player->teleport($this->getPlugin()->getServer()->getDefaultLevel()->getSafeSpawn());
+				$player->teleport(Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
 			}
 		}
 		rename($old_dir, $new_dir);
@@ -78,27 +63,29 @@ class Utils{
 			$config->save();
 		}
 		return true;
+	}*/
+	
+	public function backupExists($world): bool
+    {
+		return file_exists(Main::getInstance()->getDataFolder()."mapas/$world.zip");
 	}
 	
-	public function backupExists($world){
-		return file_exists($this->getPlugin()->getDataFolder()."mapas/$world.zip");
-	}
-	
-	public function resetMap($world){
-		if(!is_dir($directory = $this->getPlugin()->getServer()->getDataPath()."worlds/$world")){
+	public function resetMap($world): bool
+    {
+		if(!is_dir($directory = Main::getInstance()->getServer()->getDataPath()."worlds/$world")){
 			@mkdir($directory);
 		}
-		if($this->getPlugin()->getServer()->getLevelByName($world) !== null){
-			$players = $this->getPlugin()->getServer()->getLevelByName($world)->getPlayers();
-			if($world !== $this->getPlugin()->getServer()->getDefaultLevel()->getName()){
+		if(Main::getInstance()->getServer()->getWorldManager()->getWorldByName($world) !== null){
+			$players = Main::getInstance()->getServer()->getWorldManager()->getWorldByName($world)->getPlayers();
+			if($world !== Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getFolderName()){
 				foreach($players as $player){
-					$player->teleport($this->getPlugin()->getServer()->getDefaultLevel()->getSafeSpawn());
+					$player->teleport(Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
 				}
 				$this->unloadMap($world);
 			}
 		}
 		$zip = new ZipArchive;
-		if($zip->open($this->getPlugin()->getDataFolder()."mapas/$world.zip") === true){
+		if($zip->open(Main::getInstance()->getDataFolder()."mapas/$world.zip") === true){
 			$zip->extractTo($directory);
 		}
 		$zip->close();
@@ -106,17 +93,19 @@ class Utils{
 		return true;
 	}
 	
-	public function loadMap($world){
-		if(!$this->getPlugin()->getServer()->isLevelLoaded($world)){
-			$this->getPlugin()->getServer()->loadLevel($world);
+	public function loadMap($world): bool
+    {
+		if(!Main::getInstance()->getServer()->getWorldManager()->isWorldLoaded($world)){
+			Main::getInstance()->getServer()->getWorldManager()->loadWorld($world);
 			return true;
 		}
 		return false;
 	}
 	
-	public function unloadMap($world){
-		if($this->getPlugin()->getServer()->isLevelLoaded($world)){
-			$this->getPlugin()->getServer()->unloadLevel($this->getPlugin()->getServer()->getLevelByName($world));
+	public function unloadMap($world): bool
+    {
+		if(Main::getInstance()->getServer()->getWorldManager()->isWorldLoaded($world)){
+			Main::getInstance()->getServer()->getWorldManager()->unloadWorld(Main::getInstance()->getServer()->getWorldManager()->getWorldByName($world));
 			return true;
 		}
 		return false;

@@ -1,24 +1,24 @@
 <?php
+
 declare(strict_types=1);
 
 namespace bridge\task;
+
 use bridge\{Main, Entity\MainEntity};
 use pocketmine\scheduler\Task;
-use pocketmine\{Server, Player};
-use pocketmine\utils\TextFormat;
 
 class NPC extends Task
 {
 
-	public function onRun(int $currentTick)
+	public function onRun(): void
 	{
-		$level = Server::getInstance()->getDefaultLevel();
+		$level = Main::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
 		foreach ($level->getEntities() as $entity)
 		{
 			if ($entity instanceof MainEntity)
 			{
 				$entity->setNameTag($this->setTag());
-				$entity->setNameTagAlwaysVisible(true);
+				$entity->setNameTagAlwaysVisible();
 				$entity->setScale(1);
 			}
 		}

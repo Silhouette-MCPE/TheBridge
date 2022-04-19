@@ -7,11 +7,8 @@ use bridge\Main;
 
 class BridgeTask extends Task{
 	
-	public function __construct(Main $plugin){
-		$this->plugin = $plugin;
+	public function onRun(): void{
+		Main::getInstance()->updateArenas(true);
 	}
-	
-	public function onRun($timer){
-		$this->plugin->updateArenas(true);
-	}
+
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace bridge\Form;
 
 use pocketmine\form\Form as IForm;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 abstract class FormAPI implements IForm
 {
 
-    protected $data = [];
+    protected mixed $data = [];
     private $callable;
 
     /**
@@ -68,7 +68,7 @@ abstract class FormAPI implements IForm
     /**
      * @return array|mixed
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->data;
     }

@@ -6,8 +6,8 @@ class Form extends FormAPI {
 
     const IMAGE_TYPE_PATH = 0;
     const IMAGE_TYPE_URL = 1;
-    private $content = "";
-    private $labelMap = [];
+    private string $content = "";
+    private array $labelMap = [];
 
     /**
      * MenuForm constructor.

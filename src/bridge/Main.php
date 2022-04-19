@@ -64,7 +64,7 @@ class Main extends PluginBase{
             new TheBridgeCommand()
         ]);
 		$this->registerEntities([MainEntity::class]);
-		$this->getScheduler()->scheduleRepeatingTask(new BridgeTask($this), 20);
+		$this->getScheduler()->scheduleRepeatingTask(new BridgeTask(), 20);
 		$this->getScheduler()->scheduleRepeatingTask(new NPC(), 20);
 		$this->getServer()->getPluginManager()->registerEvents(new Arena($this), $this);
         //TODO: Uncomment this when economy plugin added :D
@@ -75,8 +75,8 @@ class Main extends PluginBase{
         }
         $pos = $this->leaderboard["positions"];
 
-        $this->particles[] = new FloatingText($this, new Vector3($pos[0], $pos[1], $pos[2]));
-        $this->getScheduler()->scheduleRepeatingTask(new UpdateTask($this), 100);
+        $this->particles[] = new FloatingText(new Vector3($pos[0], $pos[1], $pos[2]));
+        $this->getScheduler()->scheduleRepeatingTask(new UpdateTask(), 100);
         $this->getServer()->getLogger()->debug("The leaderboard location is loaded...");
     }
 

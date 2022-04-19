@@ -3,27 +3,33 @@
 
 namespace bridge\utils;
 
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 class Team{
 	
-	private $base = [
+	private array $base = [
 	"blue" => ["count" => 0, "players" => []],
 	"red" => ["count" => 0, "players" => []]
 	];
 	
-	private $teams = [];
-	
-	public function __construct($max = 1){
+	private array $teams;
+    /**
+     * @var int|mixed
+     */
+    private mixed $max;
+
+    public function __construct($max = 1){
 		$this->max = $max;
 		$this->teams = $this->base;
 	}
 	
-	public function reset(){
+	public function reset(): void
+    {
 		$this->teams = $this->base;
 	}
 	
-	public function isInTeam($name){
+	public function isInTeam($name): bool
+    {
 		if($name instanceof Player){
 			$name = $name->getName();
 		}
@@ -37,7 +43,8 @@ class Team{
 		return false;
 	}
 	
-	public function removePlayerTeam($name){
+	public function removePlayerTeam($name): bool
+    {
 		if($name instanceof Player){
 			$name = $name->getName();
 		}
@@ -58,7 +65,8 @@ class Team{
 		return true;
 	}
 	
-	public function addPlayerTeam($name, $team = "blue"){
+	public function addPlayerTeam($name, $team = "blue"): bool
+    {
 		if($name instanceof Player){
 			$name = $name->getName();
 		}
@@ -81,7 +89,8 @@ class Team{
 		return false;
 	}
 	
-	public function getPlayerTeam($name){
+	public function getPlayerTeam($name): ?string
+    {
 		if($name instanceof Player){
 			$name = $name->getName();
 		}
@@ -95,7 +104,8 @@ class Team{
 		return null;
 	}
 	
-	public function isTeam($name1, $name2){
+	public function isTeam($name1, $name2): bool
+    {
 		if($name1 instanceof Player){
 			$name1 = $name1->getName();
 		}
